@@ -1,8 +1,40 @@
 import express from "express";
-const app = express();
+import TelegramBot from "node-telegram-bot-api";
 
-app.get("/", (req, res) => {
-  res.send("Hello from Veo3 Telegram bot!");
+const app = express();
+app.use(express.json());
+
+const token = process.env.BOT_TELEGRAM;
+const bot = new TelegramBot(token);
+
+// 🔗 URL server kamu di Vercel
+const url = "https://veo3-telegram-bot-79fg.vercel.app";
+
+// Pasang webhook
+await bot.setWebHook(`${url}/bot${token}`);
+
+app.post(`/bot${token}`, (req, res) => {
+  bot.processUpdate(req.body);
+  res.sendStatus(200);
 });
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+// Saat ada pesan masuk
+bot.on("message", (msg) => {
+  const chatId = msg.chat.id;
+  const text = msg.text;
+
+  if (text.toLowerCase() === "/start") {
+    bot.sendMessage(chatId, "👋 Halo baby! Aku bot Veo3 siap bantu generate video realistis!");
+  } else if (text.toLowerCase() === "/help") {
+    bot.sendMessage(chatId, "Ketik prompt kamu untuk buat video realistis ✨");
+  } else {
+    bot.sendMessage(chatId, `Kamu bilang: ${text}\n(Segera aku bantu jadi video 🎬)`);
+  }
+});
+
+app.get("/", (req, res) => {
+  res.send("🚀 Veo3 Telegram Bot is live!");
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Bot running on port ${port}`));
