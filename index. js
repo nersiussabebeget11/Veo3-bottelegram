@@ -8,11 +8,11 @@ export default async function handler(req, res) {
       const chatId = data.message.chat.id;
       const text = data.message.text || "";
 
-      let reply = "Hai, aku Veo3! 🤖\nAku bisa bantu bikin video 3D lucu dan realistis!";
+      let reply = "Hai, aku Veo3 🤖 Siap bantu bikin video realistis!";
       if (text === "/start") {
-        reply = "Selamat datang di Veo3 Bot! 🎬\nKetik 'bikin video' untuk mulai.";
+        reply = "Selamat datang di Veo3 Bot 🎬\nKetik 'bikin video' untuk mulai!";
       } else if (text.toLowerCase().includes("bikin video")) {
-        reply = "Oke! Kirim deskripsi video yang kamu mau buat 😄";
+        reply = "Kirim deskripsi videomu 😄 (misal: kucing menari 3D 9:16)";
       }
 
       await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
