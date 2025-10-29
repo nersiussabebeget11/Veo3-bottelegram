@@ -1,48 +1,30 @@
 // api/index.js
-import fetch from 'node-fetch';
+import 'dotenv/config';
+import TelegramBot from 'node-telegram-bot-api';
+import axios from 'axios';
 
-export default async function handler(req, res) {
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+
+bot.onText(/\/start/, (msg) => {
+  bot.sendMessage(msg.chat.id, 'Pilih aspek rasio:\n📱 9:16 (Vertikal)\n💻 16:9 (Horizontal)');
+});
+
+bot.on('message', async (msg) => {
+  if (msg.text.toLowerCase().includes('video')) {
+    bot.sendMessage(msg.chat.id, '🎬 Membuat video, tunggu sebentar...');
     try {
-        // Pastikan request method POST (Telegram webhook)
-        if (req.method === 'POST') {
-            const body = req.body;
-            const chatId = body.message?.chat?.id;
-            const text = body.message?.text?.toLowerCase();
-
-            let reply = 'Hello! I am your Veo3 bot 🤖';
-
-            // Respon perintah /start
-            if (text === '/start') {
-                reply = 'Welcome to Veo3 Telegram Bot! 🎬\n\nYou can now generate videos easily!';
-            }
-
-            // Contoh perintah /help
-            else if (text === '/help') {
-                reply = 'Commands available:\n/start - Start bot\n/help - Show this message';
-            }
-
-            // Contoh balasan default
-            else if (text) {
-                reply = `You said: "${text}"\nI am Veo3 bot, ready to help!`;
-            }
-
-            // Kirim balasan ke Telegram
-            if (chatId) {
-                await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: chatId, text: reply })
-                });
-            }
-
-            return res.status(200).send('OK');
-        } 
-        else {
-            // Jika bukan POST, bot alive check
-            res.status(200).send('Veo3 Bot is running!');
+      const response = await axios.post(
+        `${process.env.VEO_API_URL}?key=${process.env.VEO_API_KEY}`,
+        {
+          contents: [{ parts: [{ text: msg.text }] }]
         }
+      );
+
+      bot.sendMessage(msg.chat.id, '✅ Video berhasil dibuat!');
+      console.log(response.data);
     } catch (error) {
-        console.error('Error in handler:', error);
-        res.status(500).send('Internal Server Error');
+      console.error(error);
+      bot.sendMessage(msg.chat.id, '❌ Terjadi kesalahan saat membuat video.');
     }
-}
+  }
+});
